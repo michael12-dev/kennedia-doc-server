@@ -5,7 +5,7 @@ const path = require('path');
 const {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   ImageRun, Header, Footer, AlignmentType, BorderStyle, WidthType,
-  ShadingType, VerticalAlign, ExternalHyperlink
+  ShadingType, VerticalAlign
 } = require('docx');
 
 const app = express();
@@ -15,20 +15,20 @@ app.use(express.json());
 const logoImg = fs.readFileSync(path.join(__dirname, 'logo.png'));
 const stampImg = fs.readFileSync(path.join(__dirname, 'stamp.jpeg'));
 
-function B(t) { return new TextRun({ text: t || '', bold: true, font: 'Segoe UI', size: 22 }); }
-function N(t) { return new TextRun({ text: t || '--', font: 'Segoe UI', size: 22 }); }
+function B(t) { return new TextRun({ text: t || '', bold: true, font: 'Segoe UI', size: 20 }); }
+function N(t) { return new TextRun({ text: t || '--', font: 'Segoe UI', size: 20 }); }
 function FL(label, val) {
   return new Paragraph({
-    spacing: { line: 276, lineRule: 'auto', after: 60 },
+    spacing: { line: 240, lineRule: 'auto', after: 30 },
     children: [B(label), N('  ' + (val || '--'))]
   });
 }
-function SP() { return new Paragraph({ spacing: { after: 100 }, children: [new TextRun('')] }); }
+function SP() { return new Paragraph({ spacing: { after: 50 }, children: [new TextRun('')] }); }
 function ST(t) {
   return new Paragraph({
-    spacing: { after: 80 },
+    spacing: { after: 50 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: 'C9A84C', space: 2 } },
-    children: [new TextRun({ text: t, bold: true, font: 'Segoe UI', size: 22, color: '44546A', allCaps: true })]
+    children: [new TextRun({ text: t, bold: true, font: 'Segoe UI', size: 20, color: '44546A', allCaps: true })]
   });
 }
 function TC(children, width, shading) {
@@ -52,27 +52,13 @@ app.post('/generate-doc', async (req, res) => {
       day: '2-digit', month: 'long', year: 'numeric'
     });
 
-    const photoLines = [];
-    [['Street View', s.streetViewURL], ['Gate View', s.gateViewURL], ['Front View', s.frontViewURL]].forEach(([lbl, url]) => {
-      if (url) {
-        photoLines.push(new Paragraph({
-          spacing: { after: 60 },
-          children: [
-            B(lbl + ': '),
-            new ExternalHyperlink({ link: url, children: [new TextRun({ text: url, style: 'Hyperlink', font: 'Segoe UI', size: 20 })] })
-          ]
-        }));
-      } else {
-        photoLines.push(FL(lbl + ':', 'Not provided'));
-      }
-    });
 
     const doc = new Document({
       sections: [{
         properties: {
           page: {
             size: { width: 12240, height: 15840 },
-            margin: { top: 720, right: 1080, bottom: 900, left: 1080 }
+            margin: { top: 500, right: 900, bottom: 600, left: 900 }
           }
         },
         headers: {
@@ -84,7 +70,7 @@ app.post('/generate-doc', async (req, res) => {
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER, spacing: { after: 60 },
-                children: [new ImageRun({ data: logoImg, transformation: { width: 180, height: 51 }, type: 'png' })]
+                children: [new ImageRun({ data: logoImg, transformation: { width: 200, height: 57 }, type: 'png' })]
               }),
               new Paragraph({
                 alignment: AlignmentType.CENTER, spacing: { after: 60 },
@@ -128,7 +114,7 @@ app.post('/generate-doc', async (req, res) => {
           FL('Does the Compound Have a Gate?', s.hasGate + (s.gateColour ? '  |  Gate Colour: ' + s.gateColour : '')),
           SP(),
           new Paragraph({
-            spacing: { after: 80 },
+            spacing: { after: 50 },
             children: [new TextRun({ text: 'Any information given will be treated in the strictest of confidence.', italics: true, font: 'Segoe UI', size: 20, color: '44546A' })]
           }),
           new Table({
@@ -152,18 +138,16 @@ app.post('/generate-doc', async (req, res) => {
           FL('Name of Contact Person:', s.contactName),
           FL('Phone Number:', s.contactPhone),
           FL('Relationship with Employee:', s.contactRelationship),
-          SP(), ST('Uploaded Photos'),
-          ...photoLines,
           SP(),
           new Paragraph({
-            spacing: { after: 80 },
+            spacing: { after: 50 },
             border: { top: { style: BorderStyle.SINGLE, size: 4, color: '44546A', space: 1 } },
             children: [B('Is the given address valid?'), N('          ☐  YES          ☐  NO')]
           }),
-          new Paragraph({ spacing: { after: 80 }, children: [B('Comments: '), N('_____________________________________________')] }),
-          new Paragraph({ spacing: { after: 80 }, children: [B('Date: '), N(dt)] }),
+          new Paragraph({ spacing: { after: 50 }, children: [B('Comments: '), N('_____________________________________________')] }),
+          new Paragraph({ spacing: { after: 50 }, children: [B('Date: '), N(dt)] }),
           new Paragraph({
-            spacing: { after: 80 },
+            spacing: { after: 50 },
             children: [
               B('Verification Officer: '), N('Victor Azubuike   '),
               new ImageRun({ data: stampImg, transformation: { width: 90, height: 21 }, type: 'jpeg' })
